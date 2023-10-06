@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Servlet implementation class LoginController
  */
-@WebServlet("/Logincontroller")
+@WebServlet("/logincontroller")
 public class LoginController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
@@ -36,20 +36,63 @@ public class LoginController extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String action = request.getParameter("action");
+		
+			switch (action) {
+				case "create":
+					createUser(request, response);
+					break;
+				case "delete":
+					deleteUser(request, response);
+					break;
+				case "update":
+					updateUser(request, response);
+					break;
+				default:
+					loginUser(request, response);
+			}
+	}
+		
+	protected void loginUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String usename = request.getParameter("username");
 		String password = request.getParameter("password");
 		
-		User user = new User(usename, password);
+		User user = userDao.findByUsername(usename);
 		
-		if(usename.equals("admin") && password.equals("admin1234")) {
-			request.setAttribute("user", user);
-			RequestDispatcher dispatcher = request.getRequestDispatcher("/class05/success.jsp");
+		if (user == null) {
+			RequestDispatcher dispatcher = request.getRequestDispatcher("/class05/failure.jsp");
 			dispatcher.forward(request, response);
+			return;
 		}
-		else {
-			RequestDispatcher dispatcher = request.getRequestDispatcher("/class05/faliure.jsp");
-			dispatcher.forward(request, response);
-		}
+		
+		userDao.save(newUser);
+		
+		String contextPath = request.getContextPath();
+		response.sendRedirect(contextPath + "/class05/login.jsp");
+	}
+	
+	private void deleteUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String username = request.getParameter("username");
+		
+		userDao.deleteByUsername(username);
+		
+		String contextPath = request.getContextPath();
+		response.sendRedirect(contextPath + "/class05/login.jsp");
+	}
+	
+	private void updateUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String oldUsername = request.getParameter("oldUsername");
+		String newUsername = request.getParameter("newUsername");
+		String newPassword = request.getParameter("newPassword");
+		
+		userDao.deleteByUsername(oldUsername);
+		
+		User updatedUser = new User(newUsername, newPassword);
+		
+		userDao.save(updatedUser);
+		
+		String contextPath = request.getC
+		
 	}
 
 }
